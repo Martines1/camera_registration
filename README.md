@@ -79,11 +79,76 @@ cd SuperGluePretrainedNetwork
 ````
 
 
-
 # Metrics
 We evaluate the following methods with the metrics obtained from [link](https://cmp.felk.cvut.cz/~hodanto2/data/hodan2016evaluation.pdf): \
-**Translation error** $e_{t} (t_{gt}, t_{p}) =  \lVert t_{gt} - t_{p} \rVert_{2} \ [cm]$ \
+**Translation error** $e_{t} (t_{gt}, t_{p}) =  \lVert t_{gt} - t_{p} \rVert_{2} \ [m]$ \
 \
-**Rotation error** $e_{R} (R_{gt}, R_{p}) = \arccos{\frac{trace(R_{p}R_{gt}^{-1}) -1}{2}} \ [rad]$ \
+**Rotation error** $e_{R} (R_{gt}, R_{p}) = \arccos{\frac{trace(R_{p}R_{gt}^{-1}) -1}{2}} \ [deeg]$ \
 \
 **Time** of the registration process in the seconds.
+
+# Demo
+The demo is prepared in the `registration.py`. Run the file with activated environment `cam_registration`
+```
+if  __name__ == '__main__':
+    #demo test showcase
+    t = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    print("GEOMETRIC TEST")
+    t.demo_transformation_geometry()
+    for geo_method in [t.cpd_register(), t.geotransformer_register(), t.teaser_register("FPFH"), t.gcnet_register(), t.mac_register("FPFH"), t.pointdsc_register("FPFH")]:
+        geo_method
+    print("SUPERGLUE TEST")
+    t1 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t2 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t3 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t1.demo_transformation_texture('Superglue')
+    t2.demo_transformation_texture('Superglue')
+    t3.demo_transformation_texture('Superglue')
+    
+    for superglue_method in [t1.teaser_register("Superglue"), t2.mac_register("Superglue"), t3.pointdsc_register("Superglue")]:
+        superglue_method
+    print("PDC-NET+ TEST")
+    t1 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t2 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t3 = Register("demo/0.ply", "demo/1.ply", gt=None, image_source="demo/0.png", image_target="demo/1.png")
+    t1.demo_transformation_texture('PDC-Net+')
+    t2.demo_transformation_texture('PDC-Net+')
+    t3.demo_transformation_texture('PDC-Net+')
+    for pdcnet_method in [t1.teaser_register("PDC-Net+"), t2.mac_register("PDC-Net+"), t3.pointdsc_register("PDC-Net+")]:
+        pdcnet_method
+```
+### Expected output (ignoring Teaser++ process outputs)
+```
+GEOMETRIC TEST
+CPD registration done! Total time: 12.63 sec.
+Rotation error: 6.44, translation error: 0.26
+GeoTransformer registration done! Total time: 1.93 sec.
+Rotation error: 1.22, translation error: 0.03
+Teaser++ registration done! Total time: 0.01 sec.
+Rotation error: 0.43, translation error: 0.03
+GCNet registration done! Total time: 2.96 sec.
+Rotation error: 0.14, translation error: 0.02
+MAC registration done! Total time: 1.22 sec.
+Rotation error: 0.13, translation error: 0.02
+PointDSC registration done! Total time: 0.47 sec.
+Rotation error: 1.32, translation error: 0.03
+SUPERGLUE TEST
+Teaser++ registration done! Total time: 0.0 sec.
+Rotation error: 0.11, translation error: 0.01
+MAC registration done! Total time: 98.95 sec.
+Rotation error: 0.02, translation error: 0.0
+PointDSC registration done! Total time: 0.12 sec.
+Rotation error: 0.01, translation error: 0.0
+PDC-NET+ TEST
+Teaser++ registration done! Total time: 0.02 sec.
+Rotation error: 0.04, translation error: 0.0
+MAC registration done! Total time: 1.01 sec.
+Rotation error: 0.0, translation error: 0.0
+PointDSC registration done! Total time: 0.13 sec.
+Rotation error: 0.06, translation error: 0.0
+```
+#### The purpose of the demo is to test if everything was installed correctly.
+# Future work
+* ##### Add support to Windows OS (if possible)
+* ##### Visualize correspondences
+* ##### Compare geometric and texture features for one method and chose better.
