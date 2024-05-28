@@ -24,7 +24,7 @@ def get_point_to_node_indices(points: torch.Tensor, nodes: torch.Tensor, return_
     indices = sq_dist_mat.min(dim=1)[1]
     if return_counts:
         unique_indices, unique_counts = torch.unique(indices, return_counts=True)
-        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cuda()
+        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cpu()
         node_sizes[unique_indices] = unique_counts
         return indices, node_sizes
     else:
@@ -84,23 +84,23 @@ def point_to_node_partition(
     sq_dist_mat = pairwise_distance(nodes, points)  # (M, N)
 
     point_to_node = sq_dist_mat.min(dim=0)[1]  # (N,)
-    node_masks = torch.zeros(nodes.shape[0], dtype=torch.bool).cuda()  # (M,)
+    node_masks = torch.zeros(nodes.shape[0], dtype=torch.bool).cpu()  # (M,)
     node_masks.index_fill_(0, point_to_node, True)
 
     matching_masks = torch.zeros_like(sq_dist_mat, dtype=torch.bool)  # (M, N)
-    point_indices = torch.arange(points.shape[0]).cuda()  # (N,)
+    point_indices = torch.arange(points.shape[0]).cpu()  # (N,)
     matching_masks[point_to_node, point_indices] = True  # (M, N)
     sq_dist_mat.masked_fill_(~matching_masks, 1e12)  # (M, N)
 
     node_knn_indices = sq_dist_mat.topk(k=point_limit, dim=1, largest=False)[1]  # (M, K)
     node_knn_node_indices = index_select(point_to_node, node_knn_indices, dim=0)  # (M, K)
-    node_indices = torch.arange(nodes.shape[0]).cuda().unsqueeze(1).expand(-1, point_limit)  # (M, K)
+    node_indices = torch.arange(nodes.shape[0]).cpu().unsqueeze(1).expand(-1, point_limit)  # (M, K)
     node_knn_masks = torch.eq(node_knn_node_indices, node_indices)  # (M, K)
     node_knn_indices.masked_fill_(~node_knn_masks, points.shape[0])
 
     if return_count:
         unique_indices, unique_counts = torch.unique(point_to_node, return_counts=True)
-        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cuda()  # (M,)
+        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cpu()  # (M,)
         node_sizes.index_put_([unique_indices], unique_counts)
         return point_to_node, node_sizes, node_masks, node_knn_indices, node_knn_masks
     else:
@@ -137,18 +137,18 @@ def point_to_node_partition_bug(
     sq_dist_mat = pairwise_distance(nodes, points)  # (M, N)
 
     point_to_node = sq_dist_mat.min(dim=0)[1]  # (N,)
-    node_masks = torch.zeros(nodes.shape[0], dtype=torch.bool).cuda()  # (M,)
+    node_masks = torch.zeros(nodes.shape[0], dtype=torch.bool).cpu()  # (M,)
     node_masks.index_fill_(0, point_to_node, True)
 
     node_knn_indices = sq_dist_mat.topk(k=point_limit, dim=1, largest=False)[1]  # (M, K)
     node_knn_node_indices = index_select(point_to_node, node_knn_indices, dim=0)  # (M, K)
-    node_indices = torch.arange(nodes.shape[0]).cuda().unsqueeze(1).expand(-1, point_limit)  # (M, K)
+    node_indices = torch.arange(nodes.shape[0]).cpu().unsqueeze(1).expand(-1, point_limit)  # (M, K)
     node_knn_masks = torch.eq(node_knn_node_indices, node_indices)  # (M, K)
     node_knn_indices.masked_fill_(~node_knn_masks, points.shape[0])
 
     if return_count:
         unique_indices, unique_counts = torch.unique(point_to_node, return_counts=True)
-        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cuda()  # (M,)
+        node_sizes = torch.zeros(nodes.shape[0], dtype=torch.long).cpu()  # (M,)
         node_sizes.index_put_([unique_indices], unique_counts)
         return point_to_node, node_sizes, node_masks, node_knn_indices, node_knn_masks
     else:

@@ -36,14 +36,14 @@ def extract_correspondences_from_scores(
     ref_length, src_length = score_mat.shape
 
     ref_max_scores, ref_max_indices = torch.max(score_mat, dim=1)
-    ref_indices = torch.arange(ref_length).cuda()
+    ref_indices = torch.arange(ref_length).cpu()
     ref_corr_scores_mat = torch.zeros_like(score_mat)
     ref_corr_scores_mat[ref_indices, ref_max_indices] = ref_max_scores
     ref_corr_masks_mat = torch.gt(ref_corr_scores_mat, threshold)
 
     if mutual or bilateral:
         src_max_scores, src_max_indices = torch.max(score_mat, dim=0)
-        src_indices = torch.arange(src_length).cuda()
+        src_indices = torch.arange(src_length).cpu()
         src_corr_scores_mat = torch.zeros_like(score_mat)
         src_corr_scores_mat[src_max_indices, src_indices] = src_max_scores
         src_corr_masks_mat = torch.gt(src_corr_scores_mat, threshold)
@@ -266,13 +266,13 @@ def get_node_correspondences(
 
     # generate masks
     if ref_masks is None:
-        ref_masks = torch.ones(size=(ref_nodes.shape[0],), dtype=torch.bool).cuda()
+        ref_masks = torch.ones(size=(ref_nodes.shape[0],), dtype=torch.bool).cpu()
     if src_masks is None:
-        src_masks = torch.ones(size=(src_nodes.shape[0],), dtype=torch.bool).cuda()
+        src_masks = torch.ones(size=(src_nodes.shape[0],), dtype=torch.bool).cpu()
     if ref_knn_masks is None:
-        ref_knn_masks = torch.ones(size=(ref_knn_points.shape[0], ref_knn_points.shape[1]), dtype=torch.bool).cuda()
+        ref_knn_masks = torch.ones(size=(ref_knn_points.shape[0], ref_knn_points.shape[1]), dtype=torch.bool).cpu()
     if src_knn_masks is None:
-        src_knn_masks = torch.ones(size=(src_knn_points.shape[0], src_knn_points.shape[1]), dtype=torch.bool).cuda()
+        src_knn_masks = torch.ones(size=(src_knn_points.shape[0], src_knn_points.shape[1]), dtype=torch.bool).cpu()
 
     node_mask_mat = torch.logical_and(ref_masks.unsqueeze(1), src_masks.unsqueeze(0))  # (M, N)
 
@@ -385,8 +385,8 @@ def get_node_overlap_ratios(
     )
     unique_ref_corr_indices = torch.unique(corr_indices[:, 0])
     unique_src_corr_indices = torch.unique(corr_indices[:, 1])
-    ref_overlap_masks = torch.zeros(ref_points.shape[0] + 1).cuda()  # pad for following indexing
-    src_overlap_masks = torch.zeros(src_points.shape[0] + 1).cuda()  # pad for following indexing
+    ref_overlap_masks = torch.zeros(ref_points.shape[0] + 1).cpu()  # pad for following indexing
+    src_overlap_masks = torch.zeros(src_points.shape[0] + 1).cpu()  # pad for following indexing
     ref_overlap_masks.index_fill_(0, unique_ref_corr_indices, 1.0)
     src_overlap_masks.index_fill_(0, unique_src_corr_indices, 1.0)
     ref_knn_overlap_masks = index_select(ref_overlap_masks, ref_knn_indices, dim=0)  # (N', K)

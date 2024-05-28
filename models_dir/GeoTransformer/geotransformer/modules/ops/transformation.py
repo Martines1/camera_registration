@@ -174,7 +174,7 @@ def skew_symmetric_matrix(inputs):
     """
     input_shape = inputs.shape
     output_shape = input_shape[:-1] + (3, 3)
-    skews = torch.zeros(size=output_shape).cuda()
+    skews = torch.zeros(size=output_shape).cpu()
     skews[..., 0, 1] = -inputs[..., 2]
     skews[..., 0, 2] = inputs[..., 1]
     skews[..., 1, 0] = inputs[..., 2]
@@ -204,7 +204,7 @@ def rodrigues_rotation_matrix(axes, angles):
     skews = skew_symmetric_matrix(axes)  # (B, 3, 3)
     sin_values = torch.sin(angles).view(-1, 1, 1)  # (B,)
     cos_values = torch.cos(angles).view(-1, 1, 1)  # (B,)
-    eyes = torch.eye(3).cuda().unsqueeze(0).expand_as(skews)  # (B, 3, 3)
+    eyes = torch.eye(3).cpu().unsqueeze(0).expand_as(skews)  # (B, 3, 3)
     rotations = eyes + sin_values * skews + (1.0 - cos_values) * torch.matmul(skews, skews)
     output_shape = input_shape[:-1] + (3, 3)
     rotations = rotations.view(*output_shape)
@@ -236,7 +236,7 @@ def rodrigues_alignment_matrix(src_vectors, tgt_vectors):
     cos_values = (src_vectors * tgt_vectors).sum(dim=-1)  # (B,)
     axes = F.normalize(axes, dim=-1, p=2)  # (B, 3)
     skews = skew_symmetric_matrix(axes)  # (B, 3, 3)
-    eyes = torch.eye(3).cuda().unsqueeze(0).expand_as(skews)  # (B, 3, 3)
+    eyes = torch.eye(3).cpu().unsqueeze(0).expand_as(skews)  # (B, 3, 3)
     sin_values = sin_values.view(-1, 1, 1)
     cos_values = cos_values.view(-1, 1, 1)
     rotations = eyes + sin_values * skews + (1.0 - cos_values) * torch.matmul(skews, skews)

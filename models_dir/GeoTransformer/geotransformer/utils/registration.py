@@ -45,7 +45,11 @@ def compute_relative_translation_error(gt_translation: np.ndarray, est_translati
     Returns:
         rte (float): relative translation error.
     """
-    return np.linalg.norm(gt_translation - est_translation)
+    gt_copy = np.copy(gt_translation)
+    est_copy = np.copy(est_translation)
+    gt_copy *= 100
+    est_copy *= 100
+    return np.linalg.norm(gt_copy - est_copy)
 
 
 def compute_registration_error(gt_transform: np.ndarray, est_transform: np.ndarray):

@@ -51,12 +51,12 @@ class LocalGlobalRegistration(nn.Module):
         mask_mat = torch.logical_and(ref_knn_masks.unsqueeze(2), src_knn_masks.unsqueeze(1))
 
         batch_size, ref_length, src_length = score_mat.shape
-        batch_indices = torch.arange(batch_size).cuda()
+        batch_indices = torch.arange(batch_size).cpu()
 
         # correspondences from reference side
         ref_topk_scores, ref_topk_indices = score_mat.topk(k=self.k, dim=2)  # (B, N, K)
         ref_batch_indices = batch_indices.view(batch_size, 1, 1).expand(-1, ref_length, self.k)  # (B, N, K)
-        ref_indices = torch.arange(ref_length).cuda().view(1, ref_length, 1).expand(batch_size, -1, self.k)  # (B, N, K)
+        ref_indices = torch.arange(ref_length).cpu().view(1, ref_length, 1).expand(batch_size, -1, self.k)  # (B, N, K)
         ref_score_mat = torch.zeros_like(score_mat)
         ref_score_mat[ref_batch_indices, ref_indices, ref_topk_indices] = ref_topk_scores
         ref_corr_mat = torch.gt(ref_score_mat, self.confidence_threshold)
@@ -64,7 +64,7 @@ class LocalGlobalRegistration(nn.Module):
         # correspondences from source side
         src_topk_scores, src_topk_indices = score_mat.topk(k=self.k, dim=1)  # (B, K, N)
         src_batch_indices = batch_indices.view(batch_size, 1, 1).expand(-1, self.k, src_length)  # (B, K, N)
-        src_indices = torch.arange(src_length).cuda().view(1, 1, src_length).expand(batch_size, self.k, -1)  # (B, K, N)
+        src_indices = torch.arange(src_length).cpu().view(1, 1, src_length).expand(batch_size, self.k, -1)  # (B, K, N)
         src_score_mat = torch.zeros_like(score_mat)
         src_score_mat[src_batch_indices, src_topk_indices, src_indices] = src_topk_scores
         src_corr_mat = torch.gt(src_score_mat, self.confidence_threshold)
@@ -102,26 +102,26 @@ class LocalGlobalRegistration(nn.Module):
             batch_corr_scores (Tensor): (B, K), padded with zeros.
         """
         batch_size = len(chunks)
-        indices = torch.cat([torch.arange(x, y) for x, y in chunks], dim=0).cuda()
+        indices = torch.cat([torch.arange(x, y) for x, y in chunks], dim=0).cpu()
         ref_corr_points = ref_corr_points[indices]  # (total, 3)
         src_corr_points = src_corr_points[indices]  # (total, 3)
         corr_scores = corr_scores[indices]  # (total,)
 
         max_corr = np.max([y - x for x, y in chunks])
         target_chunks = [(i * max_corr, i * max_corr + y - x) for i, (x, y) in enumerate(chunks)]
-        indices = torch.cat([torch.arange(x, y) for x, y in target_chunks], dim=0).cuda()
+        indices = torch.cat([torch.arange(x, y) for x, y in target_chunks], dim=0).cpu()
         indices0 = indices.unsqueeze(1).expand(indices.shape[0], 3)  # (total,) -> (total, 3)
-        indices1 = torch.arange(3).unsqueeze(0).expand(indices.shape[0], 3).cuda()  # (3,) -> (total, 3)
+        indices1 = torch.arange(3).unsqueeze(0).expand(indices.shape[0], 3).cpu()  # (3,) -> (total, 3)
 
-        batch_ref_corr_points = torch.zeros(batch_size * max_corr, 3).cuda()
+        batch_ref_corr_points = torch.zeros(batch_size * max_corr, 3).cpu()
         batch_ref_corr_points.index_put_([indices0, indices1], ref_corr_points)
         batch_ref_corr_points = batch_ref_corr_points.view(batch_size, max_corr, 3)
 
-        batch_src_corr_points = torch.zeros(batch_size * max_corr, 3).cuda()
+        batch_src_corr_points = torch.zeros(batch_size * max_corr, 3).cpu()
         batch_src_corr_points.index_put_([indices0, indices1], src_corr_points)
         batch_src_corr_points = batch_src_corr_points.view(batch_size, max_corr, 3)
 
-        batch_corr_scores = torch.zeros(batch_size * max_corr).cuda()
+        batch_corr_scores = torch.zeros(batch_size * max_corr).cpu()
         batch_corr_scores.index_put_([indices], corr_scores)
         batch_corr_scores = batch_corr_scores.view(batch_size, max_corr)
 

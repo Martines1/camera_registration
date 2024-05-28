@@ -31,7 +31,7 @@ class SuperPointTargetGenerator(nn.Module):
         if gt_corr_indices.shape[0] > self.num_targets:
             indices = np.arange(gt_corr_indices.shape[0])
             sel_indices = np.random.choice(indices, self.num_targets, replace=False)
-            sel_indices = torch.from_numpy(sel_indices).cuda()
+            sel_indices = torch.from_numpy(sel_indices).cpu()
             gt_corr_indices = gt_corr_indices[sel_indices]
             gt_corr_overlaps = gt_corr_overlaps[sel_indices]
 

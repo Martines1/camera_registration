@@ -34,12 +34,12 @@ class PointMatching(nn.Module):
         mask_mat = torch.logical_and(ref_knn_masks.unsqueeze(2), src_knn_masks.unsqueeze(1))
 
         batch_size, ref_length, src_length = score_mat.shape
-        batch_indices = torch.arange(batch_size).cuda()
+        batch_indices = torch.arange(batch_size).cpu()
 
         # correspondences from reference side
         ref_topk_scores, ref_topk_indices = score_mat.topk(k=self.k, dim=2)  # (B, N, K)
         ref_batch_indices = batch_indices.view(batch_size, 1, 1).expand(-1, ref_length, self.k)  # (B, N, K)
-        ref_indices = torch.arange(ref_length).cuda().view(1, ref_length, 1).expand(batch_size, -1, self.k)  # (B, N, K)
+        ref_indices = torch.arange(ref_length).cpu().view(1, ref_length, 1).expand(batch_size, -1, self.k)  # (B, N, K)
         ref_score_mat = torch.zeros_like(score_mat)
         ref_score_mat[ref_batch_indices, ref_indices, ref_topk_indices] = ref_topk_scores
         ref_corr_mat = torch.gt(ref_score_mat, self.confidence_threshold)
@@ -47,7 +47,7 @@ class PointMatching(nn.Module):
         # correspondences from source side
         src_topk_scores, src_topk_indices = score_mat.topk(k=self.k, dim=1)  # (B, K, N)
         src_batch_indices = batch_indices.view(batch_size, 1, 1).expand(-1, self.k, src_length)  # (B, K, N)
-        src_indices = torch.arange(src_length).cuda().view(1, 1, src_length).expand(batch_size, self.k, -1)  # (B, K, N)
+        src_indices = torch.arange(src_length).cpu().view(1, 1, src_length).expand(batch_size, self.k, -1)  # (B, K, N)
         src_score_mat = torch.zeros_like(score_mat)
         src_score_mat[src_batch_indices, src_topk_indices, src_indices] = src_topk_scores
         src_corr_mat = torch.gt(src_score_mat, self.confidence_threshold)

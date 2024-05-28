@@ -119,7 +119,7 @@ def to_cuda(x):
     elif isinstance(x, dict):
         x = {key: to_cuda(value) for key, value in x.items()}
     elif isinstance(x, torch.Tensor):
-        x = x.cuda()
+        x = x.cpu()
     return x
 
 

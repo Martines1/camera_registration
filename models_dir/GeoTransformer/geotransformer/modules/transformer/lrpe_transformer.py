@@ -41,7 +41,7 @@ class LRPEMultiHeadAttention(nn.Module):
         return x
 
     def get_embeddings(self, q, emb_indices):
-        emb_all_indices = torch.arange(self.num_embeddings).cuda()  # (P,)
+        emb_all_indices = torch.arange(self.num_embeddings).cpu()  # (P,)
         emb_bank = rearrange(self.embedding(emb_all_indices), 'p (h c) -> h p c', h=self.num_heads)
         attention_scores = torch.einsum('bhnc,hpc->bhnp', q, emb_bank)
         emb_indices = emb_indices.unsqueeze(1).expand(-1, self.num_heads, -1, -1)  # (B, N, M) -> (B, H, N, M)

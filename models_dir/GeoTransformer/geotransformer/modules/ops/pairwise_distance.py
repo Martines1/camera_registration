@@ -28,4 +28,4 @@ def pairwise_distance(
         y2 = torch.sum(y ** 2, dim=channel_dim).unsqueeze(-2)  # (*, M, C) or (*, C, M) -> (*, M) -> (*, 1, M)
         sq_distances = x2 - 2 * xy + y2
     sq_distances = sq_distances.clamp(min=0.0)
-    return sq_distances
+    return sq_distances.to('cpu')
