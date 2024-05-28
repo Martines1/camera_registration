@@ -164,4 +164,3 @@ dependencies:
       - widgetsnbextension==4.0.10
       - yarg==0.1.9
       - zipp==3.17.0
-prefix: /home/martin/miniconda3/envs/cam_registration
