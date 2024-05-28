@@ -22,6 +22,10 @@ This repository was tested on the following consumer-grade workstation
 * GPU: RTX 3060 12GB
 * RAM: 32GB DDR4 3600 Mhz
 ***
+### Requirements
+* Ubuntu OS
+* Miniconda
+***
 ### Install (from one terminal)
 * Clone this repository
 ```
@@ -148,7 +152,9 @@ PointDSC registration done! Total time: 0.13 sec.
 Rotation error: 0.06, translation error: 0.0
 ```
 #### The purpose of the demo is to test if everything was installed correctly.
+#### Possible error with memory
+If you run out of memory, then consider increasing the number of `voxel_size` in the method `demo_transformation_geometry(self)` or decreasing the number of `self.limit_of_texture_pairs` in the `__init__()`.
 # Future work
 * ##### Add support to Windows OS (if possible)
 * ##### Visualize correspondences
-* ##### Compare geometric and texture features for one method and chose better.
+* ##### Compare geometric and texture features for one method and choose better.
