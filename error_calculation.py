@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 
-def get_translation_error(gt : np.ndarray, est : np.ndarray, metrics : str = "m") -> float:
+def get_translation_error(gt : np.ndarray, est : np.ndarray) -> float:
     ''' Calculates translation error (euclidean norm).
         Args:
         gt: ground-truth translation vector.
@@ -13,15 +13,6 @@ def get_translation_error(gt : np.ndarray, est : np.ndarray, metrics : str = "m"
         '''
     gt_copy = np.copy(gt)
     est_copy = np.copy(est)
-    met = 1 # default metrics are in meters
-    if metrics == "dm":
-        met = 10
-    elif metrics == "cm":
-        met = 100
-    elif metrics == "mm":
-        met = 1000
-    gt_copy *= met
-    est_copy *= met
     return np.linalg.norm(gt_copy - est_copy)
 
 def get_rotation_error(gt : np.ndarray, est : np.ndarray, degrees: bool = True) -> float:
