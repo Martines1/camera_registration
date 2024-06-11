@@ -62,16 +62,14 @@ cmake -DTEASERPP_PYTHON_VERSION=3.6 .. && make teaserpp_python
 cd python && pip install .
 cd ..
 ```
-* Install and prepare PDC-Net+
+* Prepare PDC-Net+
 ```
 cd ../..
 cd pdc_net
-conda env create -f environment.yml
-conda activate dense_matching_env
 bash assets/download_pre_trained_models.sh
 ```
 ***
-In `registration.py` are available all the point-set registration methods mentioned earlier. Note, we use `subprocess` for GCNet, and PDC-Net+.
+In `registration.py` are available all the point-set registration methods mentioned earlier. Note, we use `subprocess` for GCNet.
 Additionally, for texture features the dataset must contain images of the scene with the resolution width x height = number of data points in point cloud. Also it must be ordered.
 ***
 ### Superglue support
