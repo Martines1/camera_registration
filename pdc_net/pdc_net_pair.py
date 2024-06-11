@@ -1,12 +1,8 @@
 import warnings
 warnings.filterwarnings("ignore")
-import argparse
 import os
 import time
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import cv2
 import numpy as np
 import torch
 import imageio.v2
@@ -20,9 +16,7 @@ if module_path not in sys.path:
 from model_selection import model_type, pre_trained_model_types, select_model
 #from datasets.util import pad_to_same_shape
 torch.set_grad_enabled(False)
-from utils_flow.pixel_wise_mapping import remap_using_flow_fields
-from utils_flow.visualization_utils import overlay_semantic_mask, make_sparse_matching_plot
-from utils_flow.util_optical_flow import flow_to_image  
+from utils_flow.visualization_utils import make_sparse_matching_plot
 from models.inference_utils import estimate_mask
 from utils_flow.flow_and_mapping_operations import convert_flow_to_mapping
 from validation.utils import matches_from_flow
@@ -36,18 +30,17 @@ total = 0
 
 def get_pair():
         now = time.time()
-        query_image = imageio.v2.imread('images/source.png', pilmode='RGB')
-        reference_image = imageio.v2.imread('images/target.png', pilmode='RGB')
+        query_image = imageio.v2.imread('../images/source.png', pilmode='RGB')
+        reference_image = imageio.v2.imread('../images/target.png', pilmode='RGB')
         query_image_shape = query_image.shape
         ref_image_shape = reference_image.shape
 
 
         model = 'PDCNet_plus'
         pre_trained_model = 'megadepth'
-        flipping_condition = False
         global_optim_iter = 3
         local_optim_iter = 7 
-        path_to_pre_trained_models = 'pdc_net/pre_trained_models/' 
+        path_to_pre_trained_models = '../pdc_net/pre_trained_models/' 
             
         if model not in model_type:
             raise ValueError('The model that you chose is not valid: {}'.format(model))
@@ -98,31 +91,6 @@ def get_pair():
         # removes the padding
         estimated_flow = estimated_flow[:, :, :ref_image_shape[0], :ref_image_shape[1]]
 
-        # convert to numpy and reformat
-        estimated_flow_numpy = estimated_flow.squeeze().permute(1, 2, 0).cpu().numpy()
-
-        # warp the query image according to the estimated flow
-        warped_query_image = remap_using_flow_fields(query_image, estimated_flow_numpy[:, :, 0],
-                                                    estimated_flow_numpy[:, :, 1]).astype(np.uint8)
-
-        # visualization of warped query image 
-        fig, axis = plt.subplots(1, 4, figsize=(30, 30))
-
-        axis[2].set_title(
-            'Warped query image according to estimated flow by {}_{}'.format(model, pre_trained_model))
-
-        axis[0].set_title('Query image')
-
-        axis[1].set_title('Reference image')
-
-        axis[3].imshow(flow_to_image(estimated_flow_numpy))
-        axis[3].set_title('Estimated flow {}_{}'.format(model, pre_trained_model))
-
-
-        alpha = 0.5
-        img_warped_overlay_on_target_masked = warped_query_image * alpha + reference_image * alpha
-
-
         # confidence estimation + visualization
         if not estimate_uncertainty: 
             raise ValueError
@@ -130,48 +98,10 @@ def get_pair():
         uncertainty_key = 'p_r'  # 'inv_cyclic_consistency_error' 
         #'p_r', 'inv_cyclic_consistency_error' can also be used as a confidence measure
         # 'cyclic_consistency_error' can also be used, but that's an uncertainty measure
-        min_confidence = 0.30
         confidence_map = uncertainty_components[uncertainty_key]
         confidence_map = confidence_map[:, :, :ref_image_shape[0], :ref_image_shape[1]]
 
         color = [255, 102, 51]
-        fig, axis = plt.subplots(1, 5, figsize=(30, 30))
-
-        confidence_map_numpy = confidence_map.squeeze().detach().cpu().numpy()
-        confident_mask = (confidence_map_numpy > min_confidence).astype(np.uint8)
-        confident_warped = overlay_semantic_mask(warped_query_image, ann=255 - confident_mask*255, color=color)
-
-        axis[2].set_title('Confident warped query image according to \n estimated flow by {}_{}'
-                        .format(model, pre_trained_model))
-        axis[4].imshow(confidence_map_numpy, vmin=0.0, vmax=1.0)
-        axis[4].set_title('Confident regions')
-
-
-        axis[0].set_title('Query image')
-
-        axis[1].set_title('Reference image')
-
-
-        axis[3].set_title('Estimated flow {}_{}'.format(args.model, args.pre_trained_model))
-        #fig.show()
-
-
-        # plot the confident warped regions overlaid on the reference image
-        alpha=0.5
-        if estimate_uncertainty:
-            img_warped_overlay_on_target_masked = warped_query_image * alpha * np.tile(
-                np.expand_dims(confident_mask.astype(np.uint8), axis=2), (1, 1, 3)) + \
-                (1 - alpha) * reference_image
-        else:
-            img_warped_overlay_on_target_masked = warped_query_image / 255 * 0.5 + reference_image / 255 * 0.5
-        #plt.imshow(img_warped_overlay_on_target_masked.astype(np.uint8))
-        #plt.title('Confident warped query overlaid reference image')
-        #plt.show()
-
-        # plot the confident matches, here at original resolution, could have computed at 1/4th resolution
-        # this can also direclty be computed with 
-        #network.get_matches_and_confidence(source_image, target_image)
-
 
         # get the mask according to uncertainty estimation
         mask_type = 'proba_interval_1_above_10' # 'cyclic_consistency_error_below_2' 
@@ -182,7 +112,7 @@ def get_pair():
         #                          'proba_interval_z_above_x_NMS_y',  'proba_interval_z_above_x_grid_y', 
         #                          'proba_interval_z_above_x']  x, y and z are numbers to choose
 
-
+        
         mask_padded = estimate_mask(mask_type, uncertainty_components) 
         if 'warping_mask' in list(uncertainty_components.keys()):
             # get mask from internal multi stage alignment, if it took place
@@ -214,17 +144,12 @@ def get_pair():
         mkpts_q = mkpts_query
         mkpts_r = mkpts_ref
         mkpts0, mkpts1 = np.round(mkpts_q[:top]).astype(int), np.round(mkpts_r[:top]).astype(int)
-      
-       
-        np.save("output_pairs/source_target_0.npy", mkpts0)
-        np.save("output_pairs/source_target_1.npy", mkpts1)
-
-        # confidence_values = confidence_values[:top]
-        # color = cm.jet(confidence_values)
-        # out = make_sparse_matching_plot(query_image, reference_image, mkpts0, mkpts1, color, margin=10)
+        confidence_values = confidence_values[:top]
+        color = cm.jet(confidence_values)
+        out = make_sparse_matching_plot(query_image, reference_image, mkpts0, mkpts1, color, margin=10)
 
 
-        #plt.imsave(f"output/{i}_{j}.png", out)
-        return time.time() - now
+        plt.imsave(f"output/result.png", out)
+        return time.time() - now, mkpts0, mkpts1
         
 get_pair()

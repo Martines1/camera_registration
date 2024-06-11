@@ -60,14 +60,10 @@ def select_model(model_name, pre_trained_model_type, arguments, global_optim_ite
         network: constructed and loaded network
     """
 
-    print('Model: {}\nPre-trained-model: {}'.format(model_name, pre_trained_model_type))
     if model_name not in model_type:
         raise ValueError(
             'The model that you chose does not exist, you chose {}'.format(model_name))
 
-    if 'GOCor' in model_name or 'PDCNet' in model_name:
-        print('GOCor: Local iter {}'.format(local_optim_iter))
-        print('GOCor: Global iter {}'.format(global_optim_iter))
 
     '''
     if pre_trained_model_type not in pre_trained_model_types:
