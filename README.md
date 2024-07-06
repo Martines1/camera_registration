@@ -65,7 +65,7 @@ cd ..
 * Prepare PDC-Net+
 ```
 cd ../..
-cd pdc_net
+cd PDC_NET
 bash assets/download_pre_trained_models.sh
 ```
 ***
