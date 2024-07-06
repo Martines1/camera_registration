@@ -1,6 +1,0 @@
-*.idea
-*~
-*__pycache__*
-*.pyc
-*.pytest_cache
-*.ipynb_checkpoints/
