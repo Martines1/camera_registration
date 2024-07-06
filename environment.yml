@@ -59,7 +59,9 @@ dependencies:
       - fonttools==4.49.0
       - fsspec==2024.5.0
       - gdown==5.2.0
+      - genicam==1.4.0
       - h5py==3.11.0
+      - harvesters==1.4.3
       - huggingface-hub==0.23.1
       - idna==3.6
       - igraph==0.11.5
