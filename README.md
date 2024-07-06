@@ -82,7 +82,7 @@ python registration.py --device_id first_device_id second_device_id
 We evaluate the * methods with the metrics obtained from [link](https://cmp.felk.cvut.cz/~hodanto2/data/hodan2016evaluation.pdf): \
 **Translation error** $e_{t} (t_{gt}, t_{p}) =  \lVert t_{gt} - t_{p} \rVert_{2} \ [m]$ \
 \
-**Rotation error** $e_{R} (R_{gt}, R_{p}) = \arccos{\frac{trace(R_{p}R_{gt}^{-1}) -1}{2}} \ [deeg]$ \
+**Rotation error** $e_{R} (R_{gt}, R_{p}) = \arccos{\frac{trace(R_{p}R_{gt}^{-1}) -1}{2}} \ [deg]$ \
 \
 **Time** of the registration process in the seconds.
 
