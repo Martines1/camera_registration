@@ -1,0 +1,19 @@
+{
+    "registration": {
+        "model": 5,
+        "features": 1,
+        "preprocessing": "False",
+        "undefined_data": "True",
+        "scale_factor": 0.0025,
+        "voxel_size": 0.02,
+        "preserve_edges": "False",
+        "pairs_limit": 1000
+    },
+    "camera": {
+    	"OperationMode": "Camera",
+    	"CoordinateSpace": "CameraSpace",
+    	"RecognizeMarkers": "False",
+    	"CameraSpace": "ColorCamera",
+    	"NormalsEstimationRadius": 2	
+    }
+}
