@@ -73,9 +73,9 @@ In `registration.py` are available all the point-set registration methods mentio
 Additionally, for texture features the dataset must contain images of the scene with the resolution width x height = number of data points in point cloud. Also it must be ordered.
 ***
 
-*Usage
+# Usage
 ```
-python registration.py --device_id first_device_id second_device_id ... nth device
+python registration.py --device_id first_device_id second_device_id ... nth_device_id
 ```
 ***
 # Metrics
